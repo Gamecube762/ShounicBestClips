@@ -14,6 +14,7 @@ var templates *template.Template
 
 func initRoutes(serveMux CustomMux) {
 	serveMux.NewRoute("/", routeRoot)
+	serveMux.NewRoute("/styling.css", stylingCSS)
 	serveMux.NewUserRoute("/vote/next", routeNextVote)
 	serveMux.NewUserRoute("/vote/submit", routeSubmitVote)
 
@@ -30,6 +31,14 @@ func routeRoot(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("Failed to execute template."))
 		fmt.Printf("Failed to execute template.")
 	}
+
+}
+
+// Serve that solja boy
+// becuase index.html has `styling.css` linked it makes a request for it, so  by just adding a route it automatically gets called and used
+// Probs suboptimal. idc tho lol.
+func stylingCSS(w http.ResponseWriter, req *http.Request) {
+	http.ServeFile(w, req, "templates/styling.css")
 }
 
 func routeNextVote(w http.ResponseWriter, req *http.Request, user User) {

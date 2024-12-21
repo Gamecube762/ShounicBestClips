@@ -1,0 +1,267 @@
+@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+:root {
+    /* shounic color :3 */
+    --color-bg: #304654;
+    --color-dark-bg: #222d34;
+    
+
+
+    --color-menu-button-hover: #395a6e;
+    --color-button-outline: #222d34;
+    --color-standard-button: #7494ae;
+    --color-standard-button-selected: #d0dce6;
+
+    /*
+    --color-link-hover:
+    --color-link-active:
+    --color-link-resting:
+    */
+
+    --color-text: #e9f1f5;
+    --color-text-faded: #e9f1f5a6;
+    --color-header: #e9f1f5;
+
+    --color-dark-text: #222d34;
+
+    /* overflow-y: scroll; */
+
+    --min-double-wide-width: 500px;
+}
+
+a { color: var(--alt-hover-color); }
+a:focus { color: var(--alt-hover-color); }
+a:hover { color: var(--hover-color); }
+a:active { color: var(--selected-color); }
+
+
+body, html {
+    background-color: var(--color-bg); 
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+p {
+    padding: 0;
+    margin: 0;
+    color: var(--color-text);
+    font-family: 'Afacad Flux';
+}
+
+button {
+    font-family: 'Afacad Flux';
+    font-size: 22px;
+    color: var(--color-text);
+    border: none;
+
+    transition: 0.15s;
+}
+
+iframe {
+    border: none;
+    transition: 0.15s;
+}
+
+.menuBarWrapper {
+    background-color: var(--color-dark-bg); 
+
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    grid-template-columns: 1100px;
+    height: 75px;
+
+    margin: 0;
+    padding: 0;
+}
+
+.menuBarContent {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr 130px 130px;
+    height: 75px;
+    max-width: 1100px;
+    width: 100%;
+    gap: 0px;
+
+    overflow: hidden;
+}
+
+.menuBarContent > div > p { 
+    margin: 0;
+    color: var(--color-header);
+}
+
+.menuBarContent > div {
+    display: grid;
+    align-content: center;
+}
+
+.menuBarContent > div:first-child > p {
+    margin-left: 30px;
+    font-size: 32px;
+    text-align: left;
+}
+
+.menuBarContent > div:nth-child(2) > p {
+    margin-right: 30px;
+    font-size: 22px;
+    text-align: right;
+    color: var(--color-text-faded);
+}
+
+.mainWrapper {
+    margin: 0 auto;
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    grid-template-columns: calc(500px + 45px + 500px);
+    height: 100%;
+}
+
+.pageHeader {
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    margin-top: 20px;
+    color: var(--color-text);
+    font-family: 'Afacad Flux';
+    font-size: 32px;
+}
+
+
+.mainContent {
+    --video-embed-w: 560px;
+    --video-embed-h: 315px;
+    --row-gap: 30px;
+    --column-gap: 45px;
+    --button-height: 55px;
+    --help-text-height: 125px;
+
+    display: grid;
+    justify-content: center;
+    align-content: center;
+
+    grid-template-columns: var(--video-embed-w) var(--video-embed-w);
+    grid-template-rows: var(--video-embed-h) var(--button-height) var(--button-height) var(--help-text-height);
+    /* width: calc((var(--video-embed-w) * 2) + var(--column-gap));
+    height: calc(var(--video-embed-h) + (var(--row-gap) * 2) + (var(--button-height) * 2)); */
+
+    width: 100%;
+    height: calc(100% - 75px);
+    row-gap: var(--row-gap);
+    column-gap: var(--column-gap);
+
+    overflow: hidden;
+}
+
+
+.mainContent > div > p {
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    color: var(--color-text);
+    font-family: 'Afacad Flux';
+}
+
+.mainContent > :nth-child(5) {
+    grid-area: 3 / 1 / 3 / 3;
+}
+
+.mainContent > :nth-child(6) {
+    grid-area: 4 / 1 / 4 / 3;
+}
+
+.mainContent > :nth-child(6) > p {
+    text-align: left;
+}
+
+.guideBox {
+    padding-left: 60px;
+}
+
+.guideBox > p {
+    text-align: left;
+    font-size: 18px;
+}
+
+.guideBox > ol {
+    font-size: 18px;
+    padding: 0;
+    margin: 0;
+    margin-top: 8px;
+    color: var(--color-text);
+    font-family: 'Afacad Flux';
+}
+
+/*
+.mainContent > :first-child {
+    grid-area: 1 / 1 / 1 / 3;
+    font-size: 32px;
+    text-align: center;
+    font-family: 'Afacad Flux';
+    color: var(--color-text);
+}
+*/
+
+.menuButton {
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+}
+
+.menuButton:hover {
+    background-color: var(--color-menu-button-hover);
+    color: white;
+}
+
+.standardButton {
+    height: 100%;
+    width: 170px;
+    border-radius: 12px;
+    background-color: var(--color-dark-bg);
+    margin: 0 calc(50% - 170px/2);
+    border: 0px solid var(--color-dark-bg);
+}
+
+.standardButton:disabled {
+    border: 2px solid var(--color-dark-bg);
+    color: var(--color-dark-text);
+    background-color: transparent;
+}
+
+.standardButton:hover:not([disabled]) {
+    border: 2px solid var(--color-text);
+}
+
+.selectedButtonState {
+    border: 2px solid var(--color-text);
+    background-color: var(--color-text);
+    color: var(--color-dark-text);
+}
+
+.selectedFrameState {
+    box-shadow: 0px 2px 0px var(--color-text);
+}
+
+@media (max-width: 1100px){ 
+    .menuBarWrapper {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/*
+@media (max-width: 900px){ 
+    .menuBarWrapper {
+        height: 150px;
+    }
+
+    .menuBarContent {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+        height: 150px;
+    }
+}
+*/

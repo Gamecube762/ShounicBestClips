@@ -1,5 +1,149 @@
 <!DOCTYPE html>
-<head></head>
+<html lang="en">
+<head>
+    <meta http-Equiv="Cache-Control" Content="no-cache" />
+    <meta http-Equiv="Pragma" Content="no-cache" />
+    <meta http-Equiv="Expires" Content="0" />
+    
+    <title>Best Clips of 2024</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styling.css">
+</head>
 <body>
-    <div>Some HTML goes here.</div>
+    <div class="menuBarWrapper">
+        <div class="menuBarContent">
+            <div><p>Shounic's Best Clips Of 2024</p></div>
+            <div><p>Voting ends in xx:xx:xx</p></div>
+            <button class="menuButton">About</button>
+            <button class="menuButton">My Votes</button>
+        </div>
+    </div>
+
+    <div class="mainContent">
+        <div id="clipBox1">
+        </div>
+        <div id="clipBox2">
+        </div>
+        <div>
+            <button class="standardButton" id="leftVoteButton" onclick="shiftOptionTo('left')">Vote</button>
+        </div>
+        <div>
+            <button class="standardButton" id="rightVoteButton" onclick="shiftOptionTo('right')">Vote</button>
+        </div>
+        <div>
+            <button class="standardButton" id="submitVoteButton">Submit Vote</button>
+        </div>
+        <div class="guideBox">
+            <p>Epic Guide:</p>
+            <ol>
+                <li>You will be given 2 random user-submitted clips.</li>
+                <li>Use your inner genius to decide which clip is better.</li>
+                <li>Click 'vote' and then 'submit vote.'</li>
+                <li>Your vote will be recorded, and you'll be given 2 new random clips to vote on.</li>
+                <li>The more votes the better!</li>
+            </ol> 
+        </div>
+    </div>
+
+
+    <script>
+        // element reference vars
+        var clipBox1
+        var clipBox2
+        var leftVoteButton
+        var rightVoteButton
+        var submitVoteButton
+
+        function pageLoadStuff() {
+            clipBox1 = document.getElementById("clipBox1");
+            clipBox2 = document.getElementById("clipBox2");
+            leftVoteButton = document.getElementById("leftVoteButton");
+            rightVoteButton = document.getElementById("rightVoteButton");
+            submitVoteButton = document.getElementById("submitVoteButton");
+
+            toggleVoteButtons(false)
+            toggleSubmitVoteButton(false)
+            getClips()
+        }
+
+        function getClips() {
+            window.fetch("/vote/next", { headers: { 'Accept': 'application/json' } })
+                .then((response) => {
+                    console.log(response);
+                    if (!response.ok) {
+                        // TODO: Remove this before launch
+                        console.log(`HTTP error! Status: ${response.status}`);
+                        return { a : "err", b : `Error ${response.status}; ${response.statusText}` };
+                    }
+                    return response.json();                
+                }).then((json) => {
+                    console.log(json);
+                    console.log(json["a"], json["b"]);
+                    addEmbeds(json["a"], json["b"]);
+                });
+        }
+
+        // Add new iframes
+        function addEmbeds(url_a, url_b) {
+            if (!(url_a === "err")) {
+                console.log("so cool");
+                const frame1 = document.createElement('iframe');
+                frame1.id = "clip1";
+                frame1.width = 560;
+                frame1.height = 315;
+                frame1.src = url_a;
+                clipBox1.appendChild(frame1);
+                
+                const frame2 = document.createElement('iframe');
+                frame2.id = "clip2";
+                frame2.width = 560;
+                frame2.height = 315;
+                frame2.src = url_b;
+                clipBox2.appendChild(frame2);
+
+                toggleVoteButtons(true);
+            } else {
+                console.log("many such error");
+                // Horrifically shitty error handling
+                clipBox1.appendChild(createErrorText(url_b));
+                clipBox2.appendChild(createErrorText(url_b));
+                toggleVoteButtons(false);
+            }
+        }
+
+        function createErrorText(error) {
+            var p = document.createElement('p');
+            var text = document.createTextNode(error);
+            p.appendChild(text);
+            return p
+        }
+
+        function toggleVoteButtons(enabled) {
+            leftVoteButton.disabled = !enabled;
+            rightVoteButton.disabled = !enabled;
+        }
+
+        function toggleSubmitVoteButton(enabled) {
+            submitVoteButton.disabled = !enabled;
+        }
+
+        function shiftOptionTo(me) {
+            if (me == "left") {
+                leftVoteButton.classList.add("selectedButtonState");
+                document.getElementById("clip1").classList.add("selectedFrameState");
+                rightVoteButton.classList.remove("selectedButtonState");
+                document.getElementById("clip2").classList.remove("selectedFrameState");
+            } else {
+                rightVoteButton.classList.add("selectedButtonState");
+                document.getElementById("clip2").classList.add("selectedFrameState");
+                leftVoteButton.classList.remove("selectedButtonState");
+                document.getElementById("clip1").classList.remove("selectedFrameState");
+            }
+            toggleSubmitVoteButton(true);
+        }
+
+        // Add iframes on page load
+        window.onload = pageLoadStuff();;
+    </script>
 </body>
+</html>

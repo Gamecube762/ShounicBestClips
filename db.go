@@ -42,7 +42,13 @@ func (db *Database) setup() (err error) {
 			")",
 
 		// TEST
-		"INSERT OR IGNORE INTO videos (url) VALUES ('one'),('two'),('three'),('four'),('five')",
+		// Now with family guy clips so the test stuff is usable
+		"INSERT OR IGNORE INTO videos (url) VALUES " +
+			"('https://www.youtube.com/embed/JgJUbmGDc6k')," +
+			"('https://www.youtube.com/embed/ttArr90NvWo')," +
+			"('https://www.youtube.com/embed/mIpnpYsl-VY')," +
+			"('https://www.youtube.com/embed/4LilrtDfLP0')," +
+			"('https://www.youtube.com/embed/0pnwE_Oy5WI')",
 	}
 
 	// Transaction so we can undo if we error
