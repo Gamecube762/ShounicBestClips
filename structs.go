@@ -1,16 +1,17 @@
 package main
 
-import "time"
+import (
+	"github.com/google/uuid"
+)
 
 type User struct {
-	id uint
+	id uuid.UUID
 	ip string
 }
 
-// Represents a vote sent to a user.
-// Contains a random UUID to prevent vote manipulation by modifying responses.
+// VoteOptions Represents a vote sent to the user
 type VoteOptions struct {
-	startTime time.Time
-	A         string `json:"a"`
-	B         string `json:"b"`
+	ID uuid.UUID `json:"id"`
+	A  string    `json:"a"`
+	B  string    `json:"b"`
 }
