@@ -43,28 +43,29 @@ func (db *Database) setup() (err error) {
 		// TEST
 		// Now with family guy clips so the test stuff is usable
 		"INSERT OR IGNORE INTO videos (url) VALUES " +
-			"('https://www.youtube.com/embed/oxEUk5c1iGU')," +
-			"('https://www.youtube.com/embed/TFNYbCGCIaw')," +
-			"('https://www.youtube.com/embed/N0qzSv9c0IY')," +
-			"('https://www.youtube.com/embed/sZN5yJqDaYI')," +
-			"('https://www.youtube.com/embed/TQllQlElpz8')," +
-			"('https://www.youtube.com/embed/WRRC-Iw_OPg')," +
-			"('https://www.youtube.com/embed/72eGw4H2Ka8')," +
-			"('https://www.youtube.com/embed/4LilrtDfLP0')," +
-			"('https://www.youtube.com/embed/uSlB4eznXoA')," +
-			"('https://www.youtube.com/embed/i9bYnBb42oY')," +
-			"('https://www.youtube.com/embed/lNfCvZl3sKw')," +
-			"('https://www.youtube.com/embed/nz_BY7X44kc')," +
-			"('https://www.youtube.com/embed/xrziHnudx3g')," +
+			"('https://www.youtube.com/embed/0pnwE_Oy5WI')," +
 			"('https://www.youtube.com/embed/2WNrx2jq184')," +
-			"('https://www.youtube.com/embed/el0jsvcOSTg')," +
 			"('https://www.youtube.com/embed/4hpbK7V146A')," +
-			"('https://www.youtube.com/embed/Ta_-UPND0_M')," +
-			"('https://www.youtube.com/embed/JgJUbmGDc6k')," +
-			"('https://www.youtube.com/embed/ttArr90NvWo')," +
-			"('https://www.youtube.com/embed/mIpnpYsl-VY')," +
 			"('https://www.youtube.com/embed/4LilrtDfLP0')," +
-			"('https://www.youtube.com/embed/0pnwE_Oy5WI')",
+			"('https://www.youtube.com/embed/72eGw4H2Ka8')," +
+			"('https://www.youtube.com/embed/el0jsvcOSTg')," +
+			"('https://www.youtube.com/embed/i9bYnBb42oY')," +
+			"('https://www.youtube.com/embed/JgJUbmGDc6k')," +
+			"('https://www.youtube.com/embed/lNfCvZl3sKw')," +
+			"('https://www.youtube.com/embed/mIpnpYsl-VY')," +
+			"('https://www.youtube.com/embed/N0qzSv9c0IY')," +
+			"('https://www.youtube.com/embed/nz_BY7X44kc')," +
+			"('https://www.youtube.com/embed/oxEUk5c1iGU')," +
+			"('https://www.youtube.com/embed/sZN5yJqDaYI')," +
+			"('https://www.youtube.com/embed/Ta_-UPND0_M')," +
+			"('https://www.youtube.com/embed/TFNYbCGCIaw')," +
+			"('https://www.youtube.com/embed/TQllQlElpz8')," +
+			"('https://www.youtube.com/embed/ttArr90NvWo')," +
+			"('https://www.youtube.com/embed/uSlB4eznXoA')," +
+			"('https://www.youtube.com/embed/WRRC-Iw_OPg')," +
+			"('https://www.youtube.com/embed/xrziHnudx3g')," +
+			"('https://www.youtube.com/embed/xrziHnudx3g')" +
+			"",
 	}
 
 	// Transaction so we can undo if we error
