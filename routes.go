@@ -17,74 +17,88 @@ func initRoutes(serveMux CustomMux) {
 	serveMux.NewUserRoute("/vote/submit", routeSubmitVote)
 	serveMux.NewUserRoute("/vote/deadline", routeSendDeadline)
 
-	fs, err := fs.Sub(embedWWW, "www")
+	staticFiles, err := fs.Sub(embedWWW, "www")
 	if err != nil {
 		panic(err)
 	}
 
-	serveMux.Handle("/", http.FileServerFS(fs))
+	serveMux.Handle("/", http.FileServerFS(staticFiles))
 }
 
 // Middleware TODO
 //		Rate limiting
 //      Prevent voting after a cutoff time
 
+func writeString(w http.ResponseWriter, code int, msg string) {
+	writeBytes(w, code, []byte(msg))
+}
+
+func writeBytes(w http.ResponseWriter, code int, data []byte) {
+	w.WriteHeader(code)
+	_, err := w.Write(data)
+	if err != nil {
+		http.Error(w, "Failed to write response", 500)
+	}
+}
+
 func routeNextVote(w http.ResponseWriter, req *CustomRequest, user User) {
 	options, err := database.GetNextVoteForUser(user)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to fetch from database."))
+		writeString(w, 500, "Failed to fetch from database.")
 		// TODO log to Sentry
-		fmt.Printf("Failed to get new votes for user %v \"%s\"\n", user, err)
+
+		// I hate telemetry :(
+		// - Arzumify
+		fmt.Println("Failed to get new votes for user", user, ":", err)
 		return
 	}
 
 	// User has completed their queue
 	if options == nil {
-		w.WriteHeader(204) // NO_CONTENT
-		w.Write([]byte("No more items to vote on!"))
+		writeString(w, 204, "No more items to vote on!")
 		return
 	}
 
 	// Send new vote to client
 	bytes, err := json.Marshal(options)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to write JSON data?"))
+		writeString(w, 500, "Failed to write json data.")
 		// TODO log to Sentry
-		fmt.Printf("Failed to write json data %v\n", options)
+
+		// :(
+		// - Arzumify
+		fmt.Println("Failed to write json data", options)
 		return
 	}
 
-	w.Write(bytes)
+	writeBytes(w, 200, bytes)
 }
 
 func routeSubmitVote(w http.ResponseWriter, req *CustomRequest, user User) {
 	if err := req.ParseForm(); err != nil {
-		w.WriteHeader(406)
-		w.Write([]byte("Failed to parse form input."))
+		writeString(w, 406, "Failed to parse form input.")
+		return
+	}
+
+	if !req.PostForm.Has("choice") {
+		writeString(w, 400, "No choice given.")
+		return
+	}
+
+	if time.Now().After(votingDeadline) {
+		writeString(w, 420, "Deadline passed")
 		return
 	}
 
 	choice := req.PostForm.Get("choice")
-	if choice == "" {
-		w.WriteHeader(400)
-		w.Write([]byte("No choice given"))
-		return
-	}
-
-	if time.Now().Unix() > votingDeadlineUnix {
-		w.WriteHeader(420)
-		w.Write([]byte("Deadline passed"))
-		return
-	}
-
 	err := database.SubmitUserVote(user, choice)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to communicate with database."))
+		writeString(w, 500, "Failed to communicate with database.")
 		// TODO log to Sentry
-		fmt.Printf("Failed to submit vote from %v of \"%s\": %v\n", user, choice, err)
+
+		// I hate telemetry :(
+		// - Arzumify
+		fmt.Println("Failed to submit vote from", user, "of", choice, ":", err)
 		return
 	}
 
@@ -94,16 +108,15 @@ func routeSubmitVote(w http.ResponseWriter, req *CustomRequest, user User) {
 }
 
 func routeSendDeadline(w http.ResponseWriter, req *CustomRequest, user User) {
-	bytes, err := json.Marshal(map[string]int64{"deadline": votingDeadlineUnix})
+	bytes, err := json.Marshal(map[string]int64{"deadline": votingDeadline.Unix()})
 
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to prepare deadline."))
-		fmt.Printf("Failed to write json data regarding deadline timestamp")
+		writeString(w, 500, "Failed to write json data regarding deadline timestamp")
+		fmt.Println("Failed to write json data regarding deadline timestamp")
 		return
 	}
 
-	w.Write(bytes)
+	writeBytes(w, 200, bytes)
 }
 
 // TODO /myVotes

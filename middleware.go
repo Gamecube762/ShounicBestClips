@@ -11,7 +11,7 @@ type CustomMux struct{ *http.ServeMux }
 type RouteFunc func(http.ResponseWriter, *CustomRequest)
 type UserRouteFunc func(http.ResponseWriter, *CustomRequest, User)
 
-// Basic HTTP route with logging
+// NewRoute provides a basic HTTP route with logging
 func (mux *CustomMux) NewRoute(pattern string, handler RouteFunc) {
 	mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		cw := &CustomResponseWriter{w, 200}
@@ -25,8 +25,9 @@ func (mux *CustomMux) NewRoute(pattern string, handler RouteFunc) {
 				r.RemoteAddr,
 			)
 			// TODO log to sentry
-			cw.WriteHeader(511)
-			cw.Write([]byte("Empty IP? Try again, if this is persistent, contact @Gamecube762"))
+			// :(
+			// - Arzumify
+			writeString(cw, 511, "Empty IP? Try again, if this is persistent, contact @Gamecube762 on Discord.")
 			return
 		}
 
@@ -45,7 +46,7 @@ func (mux *CustomMux) NewRoute(pattern string, handler RouteFunc) {
 	})
 }
 
-// HTTP route with User and logging.
+// NewUserRoute provides an HTTP route with User and logging.
 func (mux *CustomMux) NewUserRoute(pattern string, handler UserRouteFunc) {
 	mux.NewRoute(pattern, func(w http.ResponseWriter, r *CustomRequest) {
 		user, err := mux.loadUser(w, r)
@@ -62,16 +63,15 @@ func (mux *CustomMux) NewUserRoute(pattern string, handler UserRouteFunc) {
 func (mux *CustomMux) loadUser(w http.ResponseWriter, r *CustomRequest) (user User, err error) {
 	user, err = database.GetUser(r.GetRealIP())
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to get user!"))
+		writeString(w, 500, "Failed to fetch from database.")
 		// TODO log to Sentry
-		fmt.Printf("Failed to get User \"%s\"\n", err)
+		fmt.Println("Failed to get User", r.GetRealIP(), ":", err)
 	}
 
 	return
 }
 
-// Custom Writer so we can pull the statusCode for logging
+// CustomResponseWriter Custom Writer so we can pull the statusCode for logging
 type CustomResponseWriter struct {
 	http.ResponseWriter
 	statusCode int

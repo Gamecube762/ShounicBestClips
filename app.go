@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 var database *Database
@@ -12,9 +13,9 @@ var envDBFile = getEnvOrDefault("CLIPS_DB", "votes.db?_mutex=full")
 var envBindAddr = getEnvOrDefault("CLIPS_BIND", ":8081")
 var envBehindProxy = os.Getenv("CLIPS_BEHIND_PROXY")
 
-// TODO: Make this less stupid -myth
-// NOTE: THIS WILL BE TIMEZONE SENSITIVE!!!!!!!!!!
-var votingDeadlineUnix int64 = 1736496000
+// I made it less stupid for you
+// - Arzumify
+var votingDeadline = time.Date(2025, time.January, 15, 24, 30, 50, 0, time.UTC)
 
 func main() {
 	var err error
@@ -22,9 +23,10 @@ func main() {
 	fmt.Printf("Loading database %s\n", envDBFile)
 	database, err = LoadDatabase(envDBFile)
 	if err != nil {
+		// There is no point catching the error if you are just going to panic, smh
+		// - Arzumify
 		panic(err)
 	}
-	defer database.Close()
 
 	serveMux := CustomMux{http.NewServeMux()}
 	initRoutes(serveMux)
