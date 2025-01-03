@@ -29,7 +29,7 @@ func main() {
 	serveMux := CustomMux{http.NewServeMux()}
 	initRoutes(serveMux)
 
-	fmt.Printf("Starting http server on %s\n", envBindAddr)
+	fmt.Printf("Starting http server on http://localhost%s\n", envBindAddr)
 	if err = http.ListenAndServe(envBindAddr, serveMux); err != nil {
 		panic(err)
 	}
