@@ -273,11 +273,11 @@ func (db *Database) Setup() (err error) {
 	for _, query := range setupQueries {
 		_, err = db.Exec(query)
 		if err != nil {
-			err = tran.Rollback()
-			if err != nil {
-				return err
+			rollbackErr = tran.Rollback()
+			if rollbackErr != nil {
+				return fmt.Errorf("Failed to perform transaction (%w) and failed to reverse transaction (%v)", err, rollbackErr) 
 			}
-			return
+			return err
 		}
 	}
 
