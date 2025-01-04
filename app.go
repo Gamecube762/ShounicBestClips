@@ -8,7 +8,7 @@ import (
 
 var database *Database
 
-var envDBFile = getEnvOrDefault("CLIPS_DB", "votes.db?_mutex=full")
+var envDBFile = getEnvOrDefault("CLIPS_DB", "votes.db?_mutex=full&_journal_mode=wal")
 var envBindAddr = getEnvOrDefault("CLIPS_BIND", ":8081")
 var envBehindProxy = os.Getenv("CLIPS_BEHIND_PROXY")
 
