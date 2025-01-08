@@ -31,11 +31,23 @@ func initRoutes(serveMux CustomMux) {
 //		Rate limiting
 //      Prevent voting after a cutoff time
 
+const (
+	DBFailure         = `{"message": "Failed to fetch from Database."}`
+	VoteClosed        = `{"message": "Voting is closed."}`
+	SerializationFail = `{"message": "Failed to serialize JSON payload"}`
+)
+
 func routeNextVote(w http.ResponseWriter, req *CustomRequest, user User) {
+	if time.Now().UTC().Unix() > votingDeadlineUnix {
+		w.WriteHeader(420) // http.StatusTeapot for the funny, http.StatusGone would b more appropriate?
+		w.Write([]byte(VoteClosed))
+		return
+	}
+
 	options, err := database.GetNextVoteForUser(user)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to fetch from database."))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(DBFailure))
 		// TODO log to Sentry
 		fmt.Printf("Failed to get new votes for user %v \"%s\"\n", user, err)
 		return
@@ -43,16 +55,15 @@ func routeNextVote(w http.ResponseWriter, req *CustomRequest, user User) {
 
 	// User has completed their queue
 	if options == nil {
-		w.WriteHeader(204) // NO_CONTENT
-		w.Write([]byte("No more items to vote on!"))
+		w.WriteHeader(http.StatusNoContent) // NO_CONTENT
 		return
 	}
 
 	// Send new vote to client
 	bytes, err := json.Marshal(options)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to write JSON data?"))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(SerializationFail))
 		// TODO log to Sentry
 		fmt.Printf("Failed to write json data %v\n", options)
 		return
@@ -62,29 +73,29 @@ func routeNextVote(w http.ResponseWriter, req *CustomRequest, user User) {
 }
 
 func routeSubmitVote(w http.ResponseWriter, req *CustomRequest, user User) {
+	if time.Now().UTC().Unix() > votingDeadlineUnix {
+		w.WriteHeader(420)
+		w.Write([]byte(VoteClosed))
+		return
+	}
+
 	if err := req.ParseForm(); err != nil {
-		w.WriteHeader(406)
-		w.Write([]byte("Failed to parse form input."))
+		w.WriteHeader(http.StatusNotAcceptable)
+		w.Write([]byte(`{"message": "Failed to parse form input."}`))
 		return
 	}
 
 	choice := req.PostForm.Get("choice")
 	if choice == "" {
-		w.WriteHeader(400)
-		w.Write([]byte("No choice given"))
-		return
-	}
-
-	if time.Now().Unix() > votingDeadlineUnix {
-		w.WriteHeader(420)
-		w.Write([]byte("Deadline passed"))
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"message": "No choice given."}`))
 		return
 	}
 
 	err := database.SubmitUserVote(user, choice)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to communicate with database."))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(DBFailure))
 		// TODO log to Sentry
 		fmt.Printf("Failed to submit vote from %v of \"%s\": %v\n", user, choice, err)
 		return
@@ -99,8 +110,8 @@ func routeSendDeadline(w http.ResponseWriter, req *CustomRequest) {
 	bytes, err := json.Marshal(map[string]int64{"deadline": votingDeadlineUnix})
 
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to prepare deadline."))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(SerializationFail))
 		fmt.Printf("Failed to write json data regarding deadline timestamp")
 		return
 	}
@@ -113,16 +124,16 @@ func routeSendDeadline(w http.ResponseWriter, req *CustomRequest) {
 func routeTotals(w http.ResponseWriter, req *CustomRequest) {
 	count, err := database.TallyVotes()
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to count votes."))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"message": "Failed to count votes"}`))
 		fmt.Println(err.Error())
 		return
 	}
 
 	bytes, err := json.Marshal(count)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to write Json."))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(SerializationFail))
 		fmt.Println(err.Error())
 		return
 	}

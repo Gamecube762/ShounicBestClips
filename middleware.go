@@ -14,8 +14,18 @@ type UserRouteFunc func(http.ResponseWriter, *CustomRequest, User)
 // Basic HTTP route with logging
 func (mux *CustomMux) NewRoute(pattern string, handler RouteFunc) {
 	mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		cw := &CustomResponseWriter{w, 200}
+		cw := &CustomResponseWriter{w, http.StatusOK}
 		cr := &CustomRequest{r, ""}
+
+		// assume endpoint is json
+		cw.Header().Add("Content-Type", "application/json; charset=utf-8")
+
+		// user must have a useragent
+		if r.UserAgent() == "" {
+			cw.WriteHeader(http.StatusBadRequest)
+			cw.Write([]byte(`{"message": "User-Agent is invalid."}`))
+			return
+		}
 
 		if cr.GetRealIP() == "" {
 			fmt.Printf(
@@ -25,8 +35,8 @@ func (mux *CustomMux) NewRoute(pattern string, handler RouteFunc) {
 				r.RemoteAddr,
 			)
 			// TODO log to sentry
-			cw.WriteHeader(511)
-			cw.Write([]byte("Empty IP? Try again, if this is persistent, contact @Gamecube762"))
+			cw.WriteHeader(http.StatusNetworkAuthenticationRequired)
+			cw.Write([]byte(`{"message": "Empty IP? Try again, if this is persistent, contact @Gamecube762"}`))
 			return
 		}
 
@@ -62,8 +72,8 @@ func (mux *CustomMux) NewUserRoute(pattern string, handler UserRouteFunc) {
 func (mux *CustomMux) loadUser(w http.ResponseWriter, r *CustomRequest) (user User, err error) {
 	user, err = database.GetUser(r.GetRealIP())
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Failed to get user!"))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"message": "Failed to get user!"}`))
 		// TODO log to Sentry
 		fmt.Printf("Failed to get User \"%s\"\n", err)
 	}

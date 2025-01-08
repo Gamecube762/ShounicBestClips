@@ -3,16 +3,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-Equiv="Cache-Control" Content="no-cache" />
     <meta http-Equiv="Pragma" Content="no-cache" />
     <meta http-Equiv="Expires" Content="0" />
-    
-    <title>Best Clips of 2024</title>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="styling.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Best Clips of 2024</title>
+    <meta name="description" content="Vote for the funniest Shounic clips of 2024.">
+
+    <link rel="preconnect" href="https://youtube.com">
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="stylesheet" href="styling.css">
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    <script src="main.js"></script>
 </head>
 <body>
     <div class="headerWrapper">
@@ -22,38 +27,30 @@
         <button class="menuButton"><i class="ph ph-chart-bar-horizontal menuBtnIcon"></i><p class="menuBtnText">Stats</p></button> -->
         <div></div>
     </div>
-    <div class="contentWrapper">
-        <!-- <div class="topPaddingBox"></div>
-        <div class="bottomPaddingBox"></div>
-        <div class="leftPaddingBox"></div>
-        <div class="rightPaddingBox"></div> -->
-
-        <p class="contentHeader headerText invis" id="countdownTracker"></p>
-        <div class="embedBox1" id="uiBox1">
-            <div class="aspectRatioRespectingChad" id="clipBox1">
-                <svg id="iMissMyWife1" xmlns="http://www.w3.org/2000/svg" width="68" height="68" fill="#000000" viewBox="0 0 256 256"><path d="M216,42H40A14,14,0,0,0,26,56V200a14,14,0,0,0,14,14h64a6,6,0,0,0,5.69-4.1l15.12-45.36,37.42-15a6,6,0,0,0,3.34-3.34l15-37.42L225.9,93.69A6,6,0,0,0,230,88V56A14,14,0,0,0,216,42ZM117.77,154.43a6,6,0,0,0-3.46,3.67L99.68,202H40a2,2,0,0,1-2-2V171.17l52.58-52.58a2,2,0,0,1,2.83,0L126,151.15ZM218,83.68,174.1,98.31a6,6,0,0,0-3.67,3.46l-15.05,37.61L138.1,146.3l-36.2-36.2a14,14,0,0,0-19.8,0L38,154.2V56a2,2,0,0,1,2-2H216a2,2,0,0,1,2,2Zm9.51,33.18a6,6,0,0,0-5.41-.82L198.3,124a6,6,0,0,0-3.67,3.47L180,164l-36.56,14.63A6,6,0,0,0,140,182.3L132,206.1a6,6,0,0,0,5.69,7.9H216a14,14,0,0,0,14-14V121.73A6,6,0,0,0,227.51,116.86ZM218,200a2,2,0,0,1-2,2H146.06l4.42-13.26,36.37-14.55a6,6,0,0,0,3.34-3.34l14.55-36.37L218,130.06Z"></path></svg>
+    <!-- <div class="bigFloatingText">
+        <div class="bigFloatingTextContainer">
+            This is some text that MUST BE on the center
+        </div>
+    </div> -->
+    <div class="contentWrapper-v2">
+        <p class="contentHeader headerText" id="countdownTracker">It's Over</p>
+        <div id="videos-over" class="videos-over">
+            Loading videos...
+        </div>
+        <div id="videos" class="videos hidden">
+            <div id="player1Box" class="selected">
+                <b id="player1"></b>
+                <button class="standardButton-2" onclick="selectVote(1)">Select A</button>
+            </div>
+            <div id="player2Box" class="selected">
+                <b id="player2"></b>
+                <button class="standardButton-2" onclick="selectVote(2)">Select B</button>
             </div>
         </div>
-        <div class="embedBox2" id="uiBox2">
-            <div class="aspectRatioRespectingChad" id="clipBox2">
-                <svg id="iMissMyWife2" xmlns="http://www.w3.org/2000/svg" width="68" height="68" fill="#000000" viewBox="0 0 256 256"><path d="M216,42H40A14,14,0,0,0,26,56V200a14,14,0,0,0,14,14h64a6,6,0,0,0,5.69-4.1l15.12-45.36,37.42-15a6,6,0,0,0,3.34-3.34l15-37.42L225.9,93.69A6,6,0,0,0,230,88V56A14,14,0,0,0,216,42ZM117.77,154.43a6,6,0,0,0-3.46,3.67L99.68,202H40a2,2,0,0,1-2-2V171.17l52.58-52.58a2,2,0,0,1,2.83,0L126,151.15ZM218,83.68,174.1,98.31a6,6,0,0,0-3.67,3.46l-15.05,37.61L138.1,146.3l-36.2-36.2a14,14,0,0,0-19.8,0L38,154.2V56a2,2,0,0,1,2-2H216a2,2,0,0,1,2,2Zm9.51,33.18a6,6,0,0,0-5.41-.82L198.3,124a6,6,0,0,0-3.67,3.47L180,164l-36.56,14.63A6,6,0,0,0,140,182.3L132,206.1a6,6,0,0,0,5.69,7.9H216a14,14,0,0,0,14-14V121.73A6,6,0,0,0,227.51,116.86ZM218,200a2,2,0,0,1-2,2H146.06l4.42-13.26,36.37-14.55a6,6,0,0,0,3.34-3.34l14.55-36.37L218,130.06Z"></path></svg>
-            </div>
+        <button class="standardButton-2 mysides hidden" onclick="postVote()">Submit</button>
+        <div class="error hidden" id="errorElement">
+            <h2>Something went wrong!</h2>
         </div>
-        <div class="voteButtonBox1" id="uiBox3">
-            <button class="standardButton" id="leftVoteButton" onclick="shiftOptionTo('left')">Select A</button>
-        </div>
-        <div class="voteButtonBox2" id="uiBox4">
-            <button class="standardButton" id="rightVoteButton" onclick="shiftOptionTo('right')">Select B</button>
-        </div>
-        <div class="voteSubmitBox" id="uiBox5">
-            <button class="standardButton" id="submitVoteButton" onclick="rotateClips()">Vote</button>
-        </div>
-        <div class="gigaErrorMessageBoxRoot">
-            <div>
-                <div class="floatingGigaErrorMessageBox hidden" id="gigaErrorMessageBox"><p id="gigaErrorMessage"></p></div>
-            </div>
-        </div>
-        <p class="errorMessageBox" id="errorElement"></p>
         <div class="guideBox" id="guideBox">
             <p>Epic Guide:</p>
             <ol>
@@ -62,287 +59,9 @@
                 <li>Select a video and then click 'Vote.'</li>
                 <li>Your vote will be recorded, and you'll be given 2 new random clips to vote on.</li>
                 <li>The more votes the better!</li>
-            </ol> 
+            </ol>
         </div>
     </div>
-
-    <p class="footerBox">If you have questions or problems of extreme importance, join the <a href="https://discord.gg/HaYBByX9KM">discord</a>.</p>
-
-    <script>
-        // This is the date & time voting will end
-        let countDownDate = -1
-
-        // element reference vars
-        let clipBox1;
-        let clipBox2;
-        let leftVoteButton;
-        let rightVoteButton;
-        let submitVoteButton;
-        let countdownTracker;
-        let errorElement;
-        let brokenImage1;
-        let brokenImage2;
-        let gigaErrorMessage;
-
-        // url reference vars
-        let left_url;
-        let right_url;
-        let choice;
-
-        function pageLoadStuff() {
-            clipBox1 = document.getElementById("clipBox1");
-            clipBox2 = document.getElementById("clipBox2");
-            leftVoteButton = document.getElementById("leftVoteButton");
-            rightVoteButton = document.getElementById("rightVoteButton");
-            submitVoteButton = document.getElementById("submitVoteButton");
-            countdownTracker = document.getElementById("countdownTracker");
-            errorElement = document.getElementById("errorElement");
-            brokenImage1 = document.getElementById("iMissMyWife1");
-            brokenImage2 = document.getElementById("iMissMyWife2");
-            gigaErrorMessage = document.getElementById("gigaErrorMessage");
-
-            toggleVoteButtons(false);
-            toggleSubmitVoteButton(false);
-            getDeadline();
-            getClips();
-        }
-
-        function getDeadline() {
-            window.fetch("/vote/deadline", { headers: { 'Accept': 'application/json' } })
-            .then((response) => {
-                console.log(response);
-                // Format the error message as a successful payload lmfao
-                if (!(response.status === 200)) {
-                    return { deadline: -1 };
-                }
-                countdownTracker.classList.remove('invis');
-                return response.json();
-            }).then((json) => {
-                console.log(json);
-                countDownDate = json['deadline'] * 1000 // Deadline display implimentation is built around a miliseconds timestamp. 
-                                                                // 1000x'ing it to fit is easier.
-                setDeadlineCountdown();
-            });
-        }
-
-        function getClips() {
-            window.fetch("/vote/next", { headers: { 'Accept': 'application/json' } })
-                .then((response) => {
-                    console.log(response);
-                    // Format the error message as a successful payload lmfao
-                    if (!(response.status === 200)) {
-                        return { a : response.status, b : response.statusText };
-                    }
-                    return response.json();     
-                }).then((json) => {
-                    console.log(json);
-                    // Send the links to the embeds, otherwise post error message
-                    if (!Number.isInteger(json["a"])) {
-                        toggleBrokenEmbedSvgs(false);
-                        addEmbeds(json["a"], json["b"]);
-                        // clear error output
-                        displayError(200, "");
-                        toggleVoteButtons(true);
-                    } else {
-                        toggleBrokenEmbedSvgs(true);
-                        displayError(json["a"], json["b"]);
-                        toggleVoteButtons(false);
-                    }
-                    //console.log(json);
-                    //console.log(json["a"], json["b"]);
-                });
-        }
-
-
-        function rotateClips() {
-            let form = new FormData();
-            form.append("choice", choice);
-            const data = new URLSearchParams(form);
-            window.fetch("/vote/submit", { method: "POST", body: data, headers: new Headers() })
-                .then((response) => {
-                    if (!(response.status === 200)) {
-                        displayError(response.status, response.statusText);
-                    } else {
-                        leftVoteButton.classList.remove("selectedButtonState");
-                        rightVoteButton.classList.remove("selectedButtonState");
-                        toggleVoteButtons(false);
-                        toggleSubmitVoteButton(false);
-                        displayError(200, "");
-                        removeCurrentEmbeds();
-                        getClips();
-                    }
-                });
-        }
-
-        // Add new iframes
-        function addEmbeds(url_a, url_b) {
-            // Doesn't matter which one I get the size of, both will be the same
-            var rect = clipBox1.getBoundingClientRect();
-
-            const frame1 = document.createElement('iframe');
-            frame1.id = "clip1";
-            //frame1.classList.add("parentRespectingVideoEmbed");
-            frame1.width = rect['width'];
-            frame1.height = rect['height'];
-            frame1.src = url_a;
-            clipBox1.appendChild(frame1);
-            
-            const frame2 = document.createElement('iframe');
-            frame2.id = "clip2";
-            //frame2.classList.add("parentRespectingVideoEmbed");
-            frame2.width = rect['width'];
-            frame2.height = rect['height'];
-            frame2.src = url_b;
-            clipBox2.appendChild(frame2);
-
-            left_url = url_a;
-            right_url = url_b;
-        }
-
-        function displayError(code, message) {
-            if (!(code === 200)) {
-                // Prepare the message
-                let messageToUse = message;
-
-                if (code === 420) {
-                    messageToUse = "The voting deadline has been reached, and voting has closed. Thank you for participating!";
-                } else if (code === 204) {
-                    messageToUse = "You've submitted a vote for every single clip. There is nothing left for you to vote on."
-                // Internal error code -1 : Deadline has passed error 
-                } else if (code === -1) {
-                    messageTouse = "The voting deadline has been reached, and voting has closed.";
-                }
-
-                let errorToUse = `Error ${code}; `;
-
-                // Error codes where the message will get be giga, ie needs to be big so users will SEE them
-                // All errors below 0 are internal client-side only error codes
-                if (code < 0 || code === 204) {
-                    displayGigaError(messageToUse);
-                // Everything else will be treated as normal
-                } else {
-                    errorElement.innerHTML = `${errorToUse}${messageToUse}`;
-                }   
-            } else {
-                errorElement.innerHTML = "";
-            }
-        }
-
-        function displayGigaError(message) {
-            document.getElementById('uiBox1').classList.add('makingRoomForTheBigErrorMessage');
-            document.getElementById('uiBox2').classList.add('makingRoomForTheBigErrorMessage');
-            document.getElementById('uiBox3').classList.add('makingRoomForTheBigErrorMessage');
-            document.getElementById('uiBox4').classList.add('makingRoomForTheBigErrorMessage');
-            document.getElementById('uiBox5').classList.add('makingRoomForTheBigErrorMessage');
-
-            gigaErrorMessage.innerHTML = message;
-            document.getElementById('gigaErrorMessageBox').classList.remove("hidden");
-
-            // giga error should lock the website. Any event that causes this function to be called also does this, but for reassurance
-            toggleVoteButtons(false);
-            toggleSubmitVoteButton(false);
-        }
-
-        function removeCurrentEmbeds() {
-            document.getElementById("clip1").remove();
-            document.getElementById("clip2").remove();
-        }
-
-        function toggleVoteButtons(enabled) {
-            leftVoteButton.disabled = !enabled;
-            rightVoteButton.disabled = !enabled;
-        }
-
-        function toggleSubmitVoteButton(enabled) {
-            submitVoteButton.disabled = !enabled;
-        }
-
-        function toggleBrokenEmbedSvgs(enabled) {
-            if (enabled) {
-                brokenImage1.classList.remove("hidden");
-                brokenImage2.classList.remove("hidden");
-            } else {
-                brokenImage1.classList.add("hidden");
-                brokenImage2.classList.add("hidden");
-            }
-            
-        }
-
-        function shiftOptionTo(me) {
-            if (me === "left") {
-                leftVoteButton.classList.add("selectedButtonState");
-                document.getElementById("clip1").classList.add("selectedFrameState");
-                rightVoteButton.classList.remove("selectedButtonState");
-                document.getElementById("clip2").classList.remove("selectedFrameState");
-                choice = left_url
-
-            } else {
-                rightVoteButton.classList.add("selectedButtonState");
-                document.getElementById("clip2").classList.add("selectedFrameState");
-                leftVoteButton.classList.remove("selectedButtonState");
-                document.getElementById("clip1").classList.remove("selectedFrameState");
-                choice = right_url
-            }
-            toggleSubmitVoteButton(true);
-        }
-
-        // Update the count down every 1 second
-        const updateTimeFunc = setInterval(setDeadlineCountdown, 1000);
-
-        function setDeadlineCountdown() {
-            if (countDownDate > 0) {
-                // Get today's date and time
-                const now = new Date().getTime();
-
-                // Find the distance between now and the countdown date
-                const distance = countDownDate - now;
-
-                // Time calculations for days, hours, minutes and seconds
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-
-                // Are seconds worth using???
-
-                // No, they are not.
-                // Arzumify
-                if (days > 0) {
-                    countdownTracker.innerHTML = "Voting ends in " + days + "d " + hours + "h " + minutes + "m";
-                } else {
-                    countdownTracker.innerHTML = "Voting ends in " + hours + "h " + minutes + "m " ;
-                }
-
-                // If the countdown is over, write some text
-                if (distance < 0) {
-                    clearInterval(updateTimeFunc);
-                    toggleVoteButtons(false);
-                    toggleSubmitVoteButton(false);
-                    displayError(-1, "")
-                    countdownTracker.innerHTML = "Voting has ended!";
-                }
-            } else {
-                countdownTracker.innerHTML = "";
-            }    
-        }
-
-        // Becuase iframes do not natrually scale with the html elements they're apart of I have to MANUALLY force them to a specific size!!
-        // FUCK this shit -myth
-        function resizeEmbeds() {
-            var rect = clipBox1.getBoundingClientRect();
-            var frame1 = document.getElementById("clip1");
-            if (!(frame1 === null)) {
-                frame1.width = rect['width'];
-                frame1.height = rect['height']; 
-            }
-            var frame2 = document.getElementById("clip2");
-            if (!(frame2 === null)) {
-                frame2.width = rect['width'];
-                frame2.height = rect['height']; 
-            }
-        }
-    
-        window.onload = pageLoadStuff();
-        window.onresize = resizeEmbeds;
-    </script>
+    <script>onPageLoad();</script>
 </body>
 </html>
