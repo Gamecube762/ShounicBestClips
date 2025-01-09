@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -15,9 +16,27 @@ func LoadDatabase(file string) (db *Database, err error) {
 	if err != nil {
 		return
 	}
+	dbFile := filepath.Join("data", file)
 
-	conn, err := sql.Open("sqlite3", filepath.Join("data", file))
-	db = &Database{conn}
+	// https://github.com/mattn/go-sqlite3/issues/1179#issuecomment-1638083995
+	// dedicated read & write connection
+	// we can have unlimited reads, but at-most one write
+	var cpu = max(4, runtime.NumCPU())
+	fmt.Printf("Starting ReadConnection with %d connection(s)\n", cpu)
+	readConn, err := sql.Open("sqlite3", dbFile)
+	readConn.SetMaxOpenConns(cpu)
+	if err != nil {
+		return // panic
+	}
+
+	fmt.Printf("Starting WriteConnection\n")
+	writeConn, err := sql.Open("sqlite3", dbFile)
+	writeConn.SetMaxOpenConns(1)
+
+	db = &Database{
+		readPool:  readConn,
+		writePool: writeConn,
+	}
 
 	if err == nil {
 		err = db.setup()
@@ -26,108 +45,123 @@ func LoadDatabase(file string) (db *Database, err error) {
 	return
 }
 
-type Database struct{ *sql.DB }
+type Database struct {
+	readPool  *sql.DB
+	writePool *sql.DB
+}
+
+func (db *Database) Close() {
+	fmt.Println()
+
+	fmt.Println("Closing ReadPool")
+	err := db.readPool.Close()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+	}
+
+	fmt.Println("Closing WritePool")
+	err = db.writePool.Close()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+	}
+	fmt.Println("DB sealed")
+}
+
+const db_pragmas = `
+	PRAGMA journal_mode = WAL;
+	PRAGMA busy_timeout = 5000;
+	PRAGMA synchronous = NORMAL;
+	PRAGMA cache_size = 1000000000;
+	PRAGMA foreign_keys = true;
+	PRAGMA temp_store = memory;
+`
+
+// the sql schema
+const schema = `
+	CREATE TABLE IF NOT EXISTS videos (
+		id INTEGER PRIMARY KEY NOT NULL,
+		url TEXT UNIQUE NOT NULL
+	) STRICT;
+
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER PRIMARY KEY NOT NULL,
+		ip TEXT UNIQUE NOT NULL
+	) STRICT;
+
+	CREATE TABLE IF NOT EXISTS votes (
+		user_id INTEGER NOT NULL,
+		video_url TEXT NOT NULL,
+		score INTEGER NOT NULL
+	) STRICT;
+
+	CREATE TABLE IF NOT EXISTS active_votes (
+		user_id INTEGER PRIMARY KEY NOT NULL,
+		start_time INTEGER NOT NULL,
+		a TEXT, 
+		b TEXT 
+	) STRICT;
+`
 
 // Setup the database.
 // Ran every time we load the database.
 func (db *Database) setup() (err error) {
-	var setupQueries = []string{
-		// TODO ? video: title, uploader, docSubmitter, upload date
-		"CREATE TABLE IF NOT EXISTS videos (id INTEGER PRIMARY KEY, url TEXT UNIQUE)",
-		"CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, ip TEXT UNIQUE)",
+	// pragma (configs) first
+	db.writePool.Exec(db_pragmas)
+	db.readPool.Exec(db_pragmas)
 
-		// TODO constraint for (user, video) pairs
-		"CREATE TABLE IF NOT EXISTS votes (user_id INTEGER NOT NULL, video_url TEXT NOT NULL, score INTEGER NOT NULL)",
-		// "CREATE UNIQUE IF NOT EXISTS INDEX idx_votes_user_video ON votes(user_id, video_url)",
+	// load up the schemas, should be safe
+	db.writePool.Exec(schema)
 
-		"CREATE TABLE IF NOT EXISTS active_votes ( " +
-			"user_id INTEGER PRIMARY KEY NOT NULL, " +
-			"start_time INTEGER NOT NULL, " +
-			"a TEXT, " +
-			"b TEXT " +
-			")",
+	const dummyVideos = `
+		INSERT OR IGNORE INTO videos (url) 
+			VALUES 
+			('https://www.youtube.com/embed/oxEUk5c1iGU'),
+			('https://www.youtube.com/embed/TFNYbCGCIaw'),
+			('https://www.youtube.com/embed/N0qzSv9c0IY'),
+			('https://www.youtube.com/embed/sZN5yJqDaYI'),
+			('https://www.youtube.com/embed/TQllQlElpz8'),
+			('https://www.youtube.com/embed/WRRC-Iw_OPg'),
+			('https://www.youtube.com/embed/72eGw4H2Ka8'),
+			('https://www.youtube.com/embed/4LilrtDfLP0'),
+			('https://www.youtube.com/embed/uSlB4eznXoA'),
+			('https://www.youtube.com/embed/i9bYnBb42oY'),
+			('https://www.youtube.com/embed/lNfCvZl3sKw'),
+			('https://www.youtube.com/embed/nz_BY7X44kc'),
+			('https://www.youtube.com/embed/xrziHnudx3g'),
+			('https://www.youtube.com/embed/2WNrx2jq184'),
+			('https://www.youtube.com/embed/el0jsvcOSTg'),
+			('https://www.youtube.com/embed/4hpbK7V146A'),
+			('https://www.youtube.com/embed/Ta_-UPND0_M'),
+			('https://www.youtube.com/embed/JgJUbmGDc6k'),
+			('https://www.youtube.com/embed/ttArr90NvWo'),
+			('https://www.youtube.com/embed/mIpnpYsl-VY'),
+			('https://www.youtube.com/embed/4LilrtDfLP0'),
+			('https://www.youtube.com/embed/0pnwE_Oy5WI');
+	`
 
-		// TEST
-		// Now with family guy clips so the test stuff is usable
-		"INSERT OR IGNORE INTO videos (url) VALUES " +
-			"('https://www.youtube.com/embed/oxEUk5c1iGU')," +
-			"('https://www.youtube.com/embed/TFNYbCGCIaw')," +
-			"('https://www.youtube.com/embed/N0qzSv9c0IY')," +
-			"('https://www.youtube.com/embed/sZN5yJqDaYI')," +
-			"('https://www.youtube.com/embed/TQllQlElpz8')," +
-			"('https://www.youtube.com/embed/WRRC-Iw_OPg')," +
-			"('https://www.youtube.com/embed/72eGw4H2Ka8')," +
-			"('https://www.youtube.com/embed/4LilrtDfLP0')," +
-			"('https://www.youtube.com/embed/uSlB4eznXoA')," +
-			"('https://www.youtube.com/embed/i9bYnBb42oY')," +
-			"('https://www.youtube.com/embed/lNfCvZl3sKw')," +
-			"('https://www.youtube.com/embed/nz_BY7X44kc')," +
-			"('https://www.youtube.com/embed/xrziHnudx3g')," +
-			"('https://www.youtube.com/embed/2WNrx2jq184')," +
-			"('https://www.youtube.com/embed/el0jsvcOSTg')," +
-			"('https://www.youtube.com/embed/4hpbK7V146A')," +
-			"('https://www.youtube.com/embed/Ta_-UPND0_M')," +
-			"('https://www.youtube.com/embed/JgJUbmGDc6k')," +
-			"('https://www.youtube.com/embed/ttArr90NvWo')," +
-			"('https://www.youtube.com/embed/mIpnpYsl-VY')," +
-			"('https://www.youtube.com/embed/4LilrtDfLP0')," +
-			"('https://www.youtube.com/embed/0pnwE_Oy5WI')",
-	}
-
-	// Transaction so we can undo if we error
-	tran, err := db.Begin()
-	if err != nil {
-		return
-	}
-
-	// Run all setupQueries
-	for _, query := range setupQueries {
-		_, err = db.Exec(query)
-		if err != nil {
-			tran.Rollback()
-			return
-		}
-	}
-
-	// Commit transaction
-	return tran.Commit()
+	// then load dummy data
+	_, err = db.writePool.Exec(dummyVideos)
+	return
 }
 
 func (db *Database) GetUser(remoteAddr string) (user User, err error) {
 	user.ip = remoteAddr
 
 	// Get user from database
-	row, err := db.Query(
+	err = db.readPool.QueryRow(
 		"SELECT id FROM users WHERE ip=?",
 		user.ip,
-	)
-	if err != nil {
+	).Scan(&user.id)
+
+	if err == sql.ErrNoRows {
+		// Add user if they do not already exist.
+		// Since this is doing INSERT it is a write operation
+		err = db.writePool.QueryRow(
+			"INSERT INTO users(ip) VALUES (?) RETURNING id",
+			user.ip,
+		).Scan(&user.id)
 		return
 	}
-	defer row.Close()
-
-	if row.Next() {
-		err = row.Scan(&user.id)
-		return
-	}
-
-	// Add user if they do not already exist.
-	row2, err := db.Query(
-		"INSERT INTO users(ip) VALUES (?) RETURNING id",
-		user.ip,
-	)
-	if err != nil {
-		return
-	}
-	defer row2.Close()
-
-	if !row2.Next() {
-		// Database has dementia
-		err = fmt.Errorf("GetUser gave 0 results after inserting %s", user.ip)
-		return
-	}
-
-	err = row2.Scan(&user.id)
 	return
 }
 
@@ -146,7 +180,7 @@ func (db *Database) GetNextVoteForUser(user User) (vote *VoteOptions, err error)
 	// Query has issues committing inserts
 	// Locking issue?
 	vote = &VoteOptions{time.Now(), a, b}
-	_, err = db.Exec(
+	_, err = db.writePool.Exec(
 		"INSERT OR REPLACE INTO active_votes VALUES (?, ?, ?, ?)",
 		user.id,
 		time.Now().UnixMilli(),
@@ -159,7 +193,7 @@ func (db *Database) GetNextVoteForUser(user User) (vote *VoteOptions, err error)
 // Get new vote options for the user
 // Empty a or b strings means not enough available voting options
 func (db *Database) findNextPair(user User) (a string, b string, err error) {
-	row, err := db.Query(
+	row, err := db.readPool.Query(
 		"SELECT url FROM videos WHERE url NOT IN (SELECT video_url FROM votes WHERE user_id = ?) ORDER BY random() LIMIT 2",
 		user.id,
 	)
@@ -183,7 +217,7 @@ func (db *Database) findNextPair(user User) (a string, b string, err error) {
 }
 
 func (db *Database) GetCurrentVotingOptionsForUser(user User) (vote *VoteOptions, err error) {
-	row, err := db.Query(
+	row, err := db.readPool.Query(
 		"SELECT start_time, a, b FROM active_votes WHERE user_id = ?",
 		user.id,
 	)
@@ -238,7 +272,7 @@ func (db *Database) SubmitUserVote(user User, choice string) (err error) {
 	}
 
 	// TODO only supports one round of votes
-	_, err = db.Exec(
+	_, err = db.writePool.Exec(
 		"DELETE FROM active_votes WHERE user_id = ?;"+
 			"INSERT INTO votes VALUES (?, ?, 1), (?, ?, 0);",
 		user.id,
@@ -254,7 +288,7 @@ func (db *Database) TallyVotes() (count map[string]int, err error) {
 	count = make(map[string]int)
 
 	// Populate the map
-	row, err := db.Query("SELECT url FROM videos")
+	row, err := db.readPool.Query("SELECT url FROM videos")
 	if err != nil {
 		return
 	}
@@ -269,7 +303,7 @@ func (db *Database) TallyVotes() (count map[string]int, err error) {
 	}
 
 	// Count the results
-	row2, err := db.Query("SELECT video_url, score FROM votes")
+	row2, err := db.readPool.Query("SELECT video_url, score FROM votes")
 	if err != nil {
 		return
 	}

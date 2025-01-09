@@ -7,9 +7,12 @@ import (
 	"time"
 )
 
-type CustomMux struct{ *http.ServeMux }
-type RouteFunc func(http.ResponseWriter, *CustomRequest)
-type UserRouteFunc func(http.ResponseWriter, *CustomRequest, User)
+type CustomMux struct {
+	*http.ServeMux
+	db Database
+}
+type RouteFunc func(http.ResponseWriter, *CustomRequest, Database)
+type UserRouteFunc func(http.ResponseWriter, *CustomRequest, User, Database)
 
 // Basic HTTP route with logging
 func (mux *CustomMux) NewRoute(pattern string, handler RouteFunc) {
@@ -31,7 +34,7 @@ func (mux *CustomMux) NewRoute(pattern string, handler RouteFunc) {
 		}
 
 		start := time.Now()
-		handler(cw, cr)
+		handler(cw, cr, mux.db)
 		end := time.Since(start).Milliseconds()
 
 		fmt.Printf(
@@ -47,20 +50,20 @@ func (mux *CustomMux) NewRoute(pattern string, handler RouteFunc) {
 
 // HTTP route with User and logging.
 func (mux *CustomMux) NewUserRoute(pattern string, handler UserRouteFunc) {
-	mux.NewRoute(pattern, func(w http.ResponseWriter, r *CustomRequest) {
+	mux.NewRoute(pattern, func(w http.ResponseWriter, r *CustomRequest, db Database) {
 		user, err := mux.loadUser(w, r)
 		if err != nil {
 			return
 		}
 
-		handler(w, r, user)
+		handler(w, r, user, db)
 	})
 }
 
 // Load the user from database.
 // If there is an error, a 500 error will automatically be written to the ResponseWriter.
 func (mux *CustomMux) loadUser(w http.ResponseWriter, r *CustomRequest) (user User, err error) {
-	user, err = database.GetUser(r.GetRealIP())
+	user, err = mux.db.GetUser(r.GetRealIP())
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte("Failed to get user!"))

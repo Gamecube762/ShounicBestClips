@@ -31,8 +31,8 @@ func initRoutes(serveMux CustomMux) {
 //		Rate limiting
 //      Prevent voting after a cutoff time
 
-func routeNextVote(w http.ResponseWriter, req *CustomRequest, user User) {
-	options, err := database.GetNextVoteForUser(user)
+func routeNextVote(w http.ResponseWriter, req *CustomRequest, user User, db Database) {
+	options, err := db.GetNextVoteForUser(user)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte("Failed to fetch from database."))
@@ -61,7 +61,7 @@ func routeNextVote(w http.ResponseWriter, req *CustomRequest, user User) {
 	w.Write(bytes)
 }
 
-func routeSubmitVote(w http.ResponseWriter, req *CustomRequest, user User) {
+func routeSubmitVote(w http.ResponseWriter, req *CustomRequest, user User, db Database) {
 	if err := req.ParseForm(); err != nil {
 		w.WriteHeader(406)
 		w.Write([]byte("Failed to parse form input."))
@@ -81,7 +81,7 @@ func routeSubmitVote(w http.ResponseWriter, req *CustomRequest, user User) {
 		return
 	}
 
-	err := database.SubmitUserVote(user, choice)
+	err := db.SubmitUserVote(user, choice)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte("Failed to communicate with database."))
@@ -95,7 +95,7 @@ func routeSubmitVote(w http.ResponseWriter, req *CustomRequest, user User) {
 	//routeNextVote(w, req, user)
 }
 
-func routeSendDeadline(w http.ResponseWriter, req *CustomRequest) {
+func routeSendDeadline(w http.ResponseWriter, req *CustomRequest, db Database) {
 	bytes, err := json.Marshal(map[string]int64{"deadline": votingDeadlineUnix})
 
 	if err != nil {
@@ -110,8 +110,8 @@ func routeSendDeadline(w http.ResponseWriter, req *CustomRequest) {
 
 // TODO /myVotes
 
-func routeTotals(w http.ResponseWriter, req *CustomRequest) {
-	count, err := database.TallyVotes()
+func routeTotals(w http.ResponseWriter, req *CustomRequest, db Database) {
+	count, err := db.TallyVotes()
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte("Failed to count votes."))
