@@ -168,8 +168,8 @@ func (db *Database) GetNextVoteForUser(user User) (vote *VoteOptions, err error)
 func (db *Database) findNextPair(user User) (a string, b string, err error) {
 	row, err := db.Query(
 		"SELECT url FROM videos "+
-			"WHERE url NOT IN (SELECT video_url FROM votes WHERE user_id = ?) "+
-			"AND   url NOT IN (SELECT url FROM culled_videos) "+
+			//"WHERE url NOT IN (SELECT video_url FROM votes WHERE user_id = ?) "+
+			"WHERE   url NOT IN (SELECT url FROM culled_videos) "+
 			"ORDER BY random() LIMIT 2",
 		user.id,
 	)

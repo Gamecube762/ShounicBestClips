@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"runtime"
 	"time"
 
 	"github.com/getsentry/sentry-go"
@@ -57,7 +56,7 @@ func cullVideos(database *Database) error {
 		return err
 	}
 
-	IsSingleThreaded := runtime.GOMAXPROCS(0) == 1
+	// IsSingleThreaded := runtime.GOMAXPROCS(0) == 1
 
 	for rows.Next() {
 		var url string
@@ -74,11 +73,11 @@ func cullVideos(database *Database) error {
 		videos[url].totalScore += score
 		videos[url].totalVotes += 1
 
-		if IsSingleThreaded {
-			// Release the loop to allow
-			// Other goroutines to run.
-			time.Sleep(250 * time.Nanosecond)
-		}
+		//if IsSingleThreaded {
+		//	// Release the loop to allow
+		//	// Other goroutines to run.
+		//	time.Sleep(250 * time.Nanosecond)
+		//}
 	}
 
 	err = rows.Close()
